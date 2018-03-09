@@ -62,9 +62,9 @@ module Input = {
 module TodoItem = {
   let component = ReasonReact.statelessComponent("TodoItem");
 
-  let male = (~todo: todo, ~onToggle, ~clickDelete, _children) => {
+  let make = (~todo: todo, ~onToggle, ~clickDelete, _children) => {
     ... component,
-    render: _seld =>
+    render: _self =>
       <div className="item" onClick=(_e => onToggle())>
         <input
           className="checkbox"
@@ -93,14 +93,29 @@ let make = _children => {
   },
   reducer: (action, { todos }) => 
     switch action {
-    | Add(text) => ReasonReact.Update({ todos: [newTodo(text), ... todos] })
+    | Add(text) => ReasonReact.Update({ todos: [newTodo(text), ...todos] })
     | Check(id) => ReasonReact.Update({ todos: check(id, todos) })
     | Delete(id) => ReasonReact.Update({ todos: delete(id, todos) })
   },
-  render: ({ state: {todos}, reduce}) => {
+  render: ({ state: {todos}, reduce}) => 
     <div className="App">
       <h3>(toString("Todo App"))</h3>
       <Input onSubmit=(reduce(todo => Add(todo))) />
+      <div>
+        (
+          List.map(
+            todo => 
+              <TodoItem
+                key=(string_of_int(todo.id))
+                todo
+                onToggle=(reduce(() => Check(todo.id)))
+                clickDelete=(reduce(() => Delete(todo.id)))
+              />,
+            todos
+          )
+          |> Array.of_list
+          |> ReasonReact.arrayToElement
+        )
+      </div>
     </div>  
-  }
 };
