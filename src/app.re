@@ -31,6 +31,34 @@ let valueFromEvent = e: string => (
   |> ReactDOMRe.domElementToObj
 )##value;
 
+module Input = {
+  type state = string;
+
+  let component = ReasonReact.reducerComponent("Input");
+
+  let make = (~onSubmit, _children) => {
+    ... component,
+    initialState: () => "",
+    reducer: (newTodo, _) => ReasonReact.Update(newTodo),
+    render: ({state: todo, reduce}) =>
+      <input
+        className="input"
+        value=todo
+        _type="text"
+        placeholder="What do you want todo?"
+        onChange=(reduce(e => valueFromEvent(e)))
+        onKeyDown=(
+          (e) => {
+            if (ReactEventRe.Keyboard.key(e) == "Enter") {
+                onSubmit(todo);
+                (reduce(() => ""))();
+            }
+          }
+        )
+      />
+  };
+};
+
 let component = ReasonReact.reducerComponent("App");
 
 let make = _children => {
@@ -47,6 +75,7 @@ let make = _children => {
   render: ({ state: {todos}, reduce}) => {
     <div className="App">
       <h3>(toString("Todo App"))</h3>
+      <Input onSubmit=(reduce(todo => Add(todo))) />
     </div>  
   }
 };
